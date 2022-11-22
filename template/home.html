@@ -1,0 +1,90 @@
+<div class="position-fixed top-0 right-0 z-10">
+    <button class="btn btn-primary m-10 mr-15" type="button" onclick="halfmoon.toggleDarkMode()"><i class="fas fa-moon" aria-hidden="true"></i><span class="sr-only">Toggle Dark Mode</span></button>
+</div>
+
+<div class="content-wrapper home-page">
+    <div class="container mt-md-20">
+        <div class="content hero">
+            <h1 class="text-center site-title">Crossplane CRD Docs</h1>
+            <div id="repo_go"></div>
+            <p class="text-center">Based on : <a href="https://github.com/crdsdev/doc">https://github.com/crdsdev/doc</a>.</p>
+        </div>
+        <p>To find a repo, search <kbd>{repo}</kbd>. You may optionally append <kbd>@{version}</kbd> to view documentation for a specific version of the project. For example: <a href="/testrepo@v0.11.0">testrepo@v0.11.0</a>. If you do not include a tag, the latest indexed tag will be served.</p>
+    </div>
+</div>
+
+{{ template "_scripts" . }}
+<script type="module">
+    const { render } = ReactDOM;
+    const { useState, useRef, useEffect } = React;
+    const { html } = htmReact;
+
+    function RepoGo() {
+        const [url, setUrl] = useState('');
+        const input = useRef(null);
+
+        const onSubmit = e => {
+            const urlParts = url
+                .replace(/https?:\/\//, "")
+                .split("/");
+            urlParts[0] = urlParts[0].toLowerCase();
+            window.location.assign(`/${urlParts.join("/")}`);
+            e.preventDefault();
+        };
+
+        useEffect(() => {
+            halfmoon.keydownHandler = e => {
+                if (!(document.querySelector("input:focus") || document.querySelector("textarea:focus") || document.querySelector("select:focus"))) {
+                    // Focus the repository search input when [/] is pressed
+                    if (event.which == 191) {
+                        input.current && input.current.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        }, []);
+
+        return html`
+        <form class="input-group input-group-lg" onSubmit=${onSubmit}>
+            <div class="input-group-prepend">
+                <span class="input-group-text"><kbd class="ml-5">/</kbd></span>
+            </div>
+            <input ref=${input} type="text" class="form-control" placeholder="testrepo" onInput=${e => setUrl(e.target.value)} value=${url} />
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="search">Go</span>
+            </div>
+        </form>`;
+    }
+    render(html`<${RepoGo} />`, document.getElementById("repo_go"));
+</script>
+
+<style>
+    .home-page .hero {
+        margin-top: 10vh;
+        margin-bottom: 5vh;
+    }
+
+    .home-page .hero .site-title {
+        margin-bottom: 2rem;
+    }
+
+    .home-page .org-links {
+        display: flex;
+        flex-direction: column;
+        row-gap: 1rem;
+    }
+
+    .home-page .org-link {
+        font-size: 2rem;
+    }
+
+    @media screen and (max-width: 575px) {
+        .home-page .org-links {
+            row-gap: .5rem;
+        }
+
+        .home-page .org-link {
+            font-size: 1.6rem;
+        }
+    }
+</style>
